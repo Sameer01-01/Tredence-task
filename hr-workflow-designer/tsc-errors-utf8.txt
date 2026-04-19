@@ -1,0 +1,21 @@
+﻿src/api/workflowApi.ts(1,10): error TS1484: 'Node' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/api/workflowApi.ts(1,16): error TS1484: 'Edge' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/App.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/Canvas.tsx(7,3): error TS1484: 'Node' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/NodeConfigPanel.tsx(3,26): error TS1484: 'Automation' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/NodeConfigPanel.tsx(45,13): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(57,15): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(71,17): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(81,17): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(95,17): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(105,17): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(115,35): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/components/NodeConfigPanel.tsx(132,15): error TS2322: Type '{}' is not assignable to type 'string | number | readonly string[] | undefined'.
+src/store/workflowStore.ts(3,3): error TS1484: 'Connection' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(4,3): error TS1484: 'Edge' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(5,3): error TS1484: 'EdgeChange' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(6,3): error TS1484: 'Node' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(7,3): error TS1484: 'NodeChange' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(9,3): error TS1484: 'OnNodesChange' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(10,3): error TS1484: 'OnEdgesChange' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/store/workflowStore.ts(11,3): error TS1484: 'OnConnect' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.

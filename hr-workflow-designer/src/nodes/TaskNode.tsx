@@ -1,0 +1,23 @@
+import { Handle, Position } from '@xyflow/react';
+import { ClipboardList } from 'lucide-react';
+
+export const TaskNode = ({ data }: any) => {
+  return (
+    <div className="custom-node task-node">
+      <Handle type="target" position={Position.Top} className="handle-target" />
+      <div className="node-header">
+        <ClipboardList size={16} />
+        <span>{data.title || 'Manual Task'}</span>
+      </div>
+      <div className="node-content">
+        <div className="node-row">
+          <small>Assignee:</small> <span>{data.assignee || 'Unassigned'}</span>
+        </div>
+        <div className="node-row">
+          <small>Due:</small> <span>{data.dueDate || '-'}</span>
+        </div>
+      </div>
+      <Handle type="source" position={Position.Bottom} className="handle-source" />
+    </div>
+  );
+};
