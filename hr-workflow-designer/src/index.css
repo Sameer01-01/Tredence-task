@@ -1,22 +1,35 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --bg-panel: rgba(30, 41, 59, 0.85);
+  --bg-primary: #000000;
+  --bg-secondary: #111111;
+  --bg-panel: rgba(20, 20, 20, 0.85);
+  --bg-canvas: #000000;
 
   --text-main: #f8fafc;
-  --text-muted: #cbd5e1;
+  --text-muted: #94a3b8;
 
   --accent-color: #6366f1;
   --accent-hover: #4f46e5;
-  --border-color: #334155;
+  --border-color: #333333;
 
   --node-start: #10b981;
   --node-task: #3b82f6;
   --node-approval: #eab308;
   --node-automated: #a855f7;
   --node-end: #ef4444;
+}
+
+body.light-theme {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-panel: rgba(255, 255, 255, 0.85);
+  --bg-canvas: #f1f5f9;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+
+  --border-color: #e2e8f0;
 }
 
 * {
@@ -44,15 +57,33 @@ body {
   border-bottom: 1px solid var(--border-color);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.theme-toggle:hover {
+  background: rgba(128, 128, 128, 0.1);
 }
 
 .app-header h1 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 800;
   letter-spacing: 0.5px;
-  background: linear-gradient(90deg, #818cf8, #c084fc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #3b82f6;
 }
 
 .main-layout {
@@ -112,7 +143,7 @@ body {
 .canvas-area {
   flex: 1;
   position: relative;
-  background-color: #020617; /* Darker bg for canvas to pop */
+  background-color: var(--bg-canvas);
 }
 
 .canvas-wrapper {
@@ -261,7 +292,7 @@ body {
 .form-group input, .form-group select {
   width: 100%;
   padding: 10px;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 6px;
   color: var(--text-main);
