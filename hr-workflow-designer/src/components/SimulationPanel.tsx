@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { useWorkflowStore } from '../store/workflowStore';
-import { simulateWorkflow } from '../api/workflowApi';
-import { PlayCircle, GripHorizontal, XSquare } from 'lucide-react';
+import { simulateWorkflowAdvanced, type SimulationStep } from '../utils/simulationEngine';
+import { validateWorkflow } from '../utils/graphValidation';
+import { PlayCircle, GripHorizontal, XSquare, Clock } from 'lucide-react';
 
 export const SimulationPanel: React.FC = () => {
-  const { nodes, edges } = useWorkflowStore();
-  const [logs, setLogs] = useState<string[]>([]);
+  const { nodes, edges, setEdges, setNodeStatus, resetAllStatuses } = useWorkflowStore();
+  const [logs, setLogs] = useState<SimulationStep[]>([]);
   const [isRunning, setIsRunning] = useState(false);
 
   // Dragging state
@@ -16,13 +17,37 @@ export const SimulationPanel: React.FC = () => {
   const handleRun = async () => {
     setIsRunning(true);
     setLogs([]);
+    
+    resetAllStatuses();
+    setEdges(edges.map(e => ({ ...e, animated: false, style: {} })));
+
+    const validation = validateWorkflow(nodes, edges);
+    if (!validation.isValid) {
+      setLogs([{ log: 'Validation Failed. Cannot run simulation:', status: 'completed' }]);
+      validation.errors.forEach(e => setLogs(p => [...p, { log: `! ${e}`, status: 'completed' }]));
+      setIsRunning(false);
+      return;
+    }
+
     try {
-      const resultLogs = await simulateWorkflow(nodes, edges);
-      setLogs(resultLogs);
+      for await (const step of simulateWorkflowAdvanced(nodes, edges)) {
+        setLogs(prev => [...prev, step]);
+        
+        if (step.activeNodeId && step.status) {
+           setNodeStatus(step.activeNodeId, step.status);
+           setEdges(useWorkflowStore.getState().edges.map(e => {
+             if (e.source === step.activeNodeId) {
+               return { ...e, animated: step.status === 'running', style: step.status === 'running' ? { stroke: '#3b82f6', strokeWidth: 3 } : {} };
+             }
+             return e;
+           }));
+        }
+      }
     } catch (err) {
-      setLogs(['Error executing simulation']);
+      setLogs(prev => [...prev, { log: 'Error executing simulation', status: 'completed' }]);
     } finally {
       setIsRunning(false);
+      setEdges(useWorkflowStore.getState().edges.map(e => ({ ...e, animated: false, style: {} })));
     }
   };
 
@@ -52,6 +77,8 @@ export const SimulationPanel: React.FC = () => {
 
   const closeDetails = () => {
     setLogs([]);
+    resetAllStatuses();
+    setEdges(useWorkflowStore.getState().edges.map(e => ({ ...e, animated: false, style: {} })));
   };
 
   return (
@@ -111,11 +138,12 @@ export const SimulationPanel: React.FC = () => {
       </div>
       <div className="logs-container">
         {logs.length === 0 ? (
-          <p className="no-logs">Press "Run Workflow" to see execution steps</p>
+          <p className="no-logs">Press "Run Workflow" to see execution timeline</p>
         ) : (
-          logs.map((log, index) => (
-            <div key={index} className={`log-entry ${log.includes('ERROR') ? 'log-error' : ''}`}>
-              {log}
+          logs.map((step, index) => (
+            <div key={index} className={`log-entry ${step.log.startsWith('!') ? 'log-error' : ''}`} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <Clock size={12} style={{ color: step.status === 'running' ? '#3b82f6' : 'var(--text-muted)' }} />
+              <span>{step.log}</span>
             </div>
           ))
         )}

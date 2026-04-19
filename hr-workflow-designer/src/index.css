@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
+  color-scheme: dark;
   --bg-primary: #000000;
   --bg-secondary: #111111;
   --bg-panel: rgba(20, 20, 20, 0.85);
@@ -21,6 +22,7 @@
 }
 
 body.light-theme {
+  color-scheme: light;
   --bg-primary: #f8fafc;
   --bg-secondary: #ffffff;
   --bg-panel: rgba(255, 255, 255, 0.85);
@@ -305,6 +307,23 @@ body {
   border-color: var(--accent-color);
 }
 
+.form-group input.invalid-input {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+/* Timeline log entries */
+.log-entry.log-error {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  border-left: 3px solid #ef4444;
+}
+
+.log-entry.log-success {
+  border-left: 3px solid #10b981;
+}
+
+
 /* Custom Nodes base styling */
 .custom-node {
   background: var(--bg-secondary);
@@ -357,4 +376,37 @@ body {
 .react-flow__node.selected .custom-node {
   border-color: var(--accent-color);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.custom-node.status-running {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+}
+
+.custom-node.status-completed {
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Base React Flow theming */
+.react-flow__controls {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.react-flow__controls-button {
+  background: var(--bg-panel) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-main) !important;
+  fill: var(--text-main) !important;
+  transition: all 0.2s;
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-secondary) !important;
+}
+
+.react-flow__controls-button svg {
+  fill: var(--text-main) !important;
 }

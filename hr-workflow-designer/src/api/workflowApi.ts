@@ -17,21 +17,22 @@ export const getAutomations = async (): Promise<Automation[]> => {
   ];
 };
 
-export const simulateWorkflow = async (nodes: Node[], edges: Edge[]): Promise<string[]> => {
+export type SimulationStep = { log: string; activeNodeId?: string; nextNodeIds?: string[] };
+
+export async function* simulateWorkflowSteps(nodes: Node[], edges: Edge[]): AsyncGenerator<SimulationStep> {
   await new Promise((resolve) => setTimeout(resolve, 800));
   
-  const logs: string[] = [];
-  logs.push('Starting workflow simulation...');
+  yield { log: 'Starting workflow simulation...' };
 
   // Basic validation
   const startNodes = nodes.filter((n) => n.type === 'start');
   if (startNodes.length === 0) {
-    logs.push('ERROR: No Start Node found. Workflow aborted.');
-    return logs;
+    yield { log: 'ERROR: No Start Node found. Workflow aborted.' };
+    return;
   }
   if (startNodes.length > 1) {
-    logs.push('ERROR: Multiple Start Nodes found. Must specify exactly one. Workflow aborted.');
-    return logs;
+    yield { log: 'ERROR: Multiple Start Nodes found. Must specify exactly one. Workflow aborted.' };
+    return;
   }
 
   // Build adjacency list for topological traversal
@@ -55,28 +56,40 @@ export const simulateWorkflow = async (nodes: Node[], edges: Edge[]): Promise<st
     const node = nodes.find((n) => n.id === currentId);
     if (!node) continue;
 
-    logs.push(`Executing Node (${node.type}): ${node.data?.title || 'Unknown Title'}`);
+    const neighbors = adj.get(currentId) || [];
     
+    // Yield we are at this node
+    yield { 
+      log: `Executing Node (${node.type}): ${node.data?.title || 'Unknown Title'}`, 
+      activeNodeId: currentId,
+      nextNodeIds: neighbors 
+    };
+
+    await new Promise(r => setTimeout(r, 600));
+
+    let actionLog = '';
     // Process based on node type
     switch (node.type) {
       case 'start':
-        logs.push(` -> Metadata initialized.`);
+        actionLog = ` -> Metadata initialized.`;
         break;
       case 'task':
-        logs.push(` -> Assigned to ${node.data?.assignee || 'Unassigned'} | Due: ${node.data?.dueDate || 'N/A'}`);
+        actionLog = ` -> Assigned to ${node.data?.assignee || 'Unassigned'} | Due: ${node.data?.dueDate || 'N/A'}`;
         break;
       case 'approval':
-        logs.push(` -> Awaiting approval from role: ${node.data?.approverRole || 'Manager'} `);
+        actionLog = ` -> Awaiting approval from role: ${node.data?.approverRole || 'Manager'} `;
         break;
       case 'automated':
-        logs.push(` -> Action triggered: ${node.data?.action || 'None'}`);
+        actionLog = ` -> Action triggered: ${node.data?.action || 'None'}`;
         break;
       case 'end':
-        logs.push(` -> Workflow ended. ${node.data?.endMessage || ''}`);
+        actionLog = ` -> Workflow ended. ${node.data?.endMessage || ''}`;
         break;
     }
+    yield { log: actionLog, activeNodeId: currentId };
+    
+    await new Promise(r => setTimeout(r, 400));
 
-    const neighbors = adj.get(currentId) || [];
     for (const neighbor of neighbors) {
       if (!visited.has(neighbor)) {
         visited.add(neighbor);
@@ -85,6 +98,5 @@ export const simulateWorkflow = async (nodes: Node[], edges: Edge[]): Promise<st
     }
   }
 
-  logs.push('Workflow simulation completed.');
-  return logs;
-};
+  yield { log: 'Workflow simulation completed.' };
+}

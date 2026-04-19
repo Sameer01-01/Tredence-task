@@ -5,6 +5,7 @@ import { getAutomations, type Automation } from '../api/workflowApi';
 export const NodeConfigPanel: React.FC = () => {
   const { nodes, selectedNodeId, updateNodeData, setNodes } = useWorkflowStore();
   const [automations, setAutomations] = useState<Automation[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     getAutomations().then(setAutomations);
@@ -22,7 +23,22 @@ export const NodeConfigPanel: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    updateNodeData(selectedNode.id, { [name]: value });
+    let errorMsg = '';
+
+    if (name === 'title' && value.trim() === '') {
+      errorMsg = 'Title is required';
+    } 
+    if (name === 'autoApproveThreshold') {
+      const num = Number(value);
+      if (isNaN(num) || num < 0) {
+        errorMsg = 'Must be a positive number';
+        setErrors({ ...errors, [name]: errorMsg });
+        return; // Prevent update
+      }
+    }
+
+    setErrors({ ...errors, [name]: errorMsg });
+    updateNodeData(selectedNode.id, { [name]: name === 'autoApproveThreshold' ? Number(value) : value });
   };
 
   const handleDelete = () => {
@@ -45,7 +61,9 @@ export const NodeConfigPanel: React.FC = () => {
             value={String(selectedNode.data?.title || '')}
             onChange={handleChange}
             placeholder="Node Title"
+            className={errors.title ? 'invalid-input' : ''}
           />
+          {errors.title && <span style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px' }}>{errors.title}</span>}
         </div>
 
         {selectedNode.type === 'start' && (
@@ -104,7 +122,9 @@ export const NodeConfigPanel: React.FC = () => {
                 name="autoApproveThreshold"
                 value={String(selectedNode.data?.autoApproveThreshold || '')}
                 onChange={handleChange}
+                className={errors.autoApproveThreshold ? 'invalid-input' : ''}
               />
+              {errors.autoApproveThreshold && <span style={{ color: '#ef4444', fontSize: '11px', marginTop: '4px' }}>{errors.autoApproveThreshold}</span>}
             </div>
           </>
         )}

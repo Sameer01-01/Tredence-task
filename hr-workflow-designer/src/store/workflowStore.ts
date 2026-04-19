@@ -1,9 +1,8 @@
 import { create } from 'zustand';
+import { temporal } from 'zundo';
 import {
   type Connection,
-  type Edge,
   type EdgeChange,
-  type Node,
   type NodeChange,
   addEdge,
   type OnNodesChange,
@@ -12,60 +11,80 @@ import {
   applyNodeChanges,
   applyEdgeChanges,
 } from '@xyflow/react';
+import type { WorkflowNode, WorkflowEdge } from '../types/workflow';
 
 // Define the state for the workflow builder
 interface WorkflowState {
-  nodes: Node[];
-  edges: Edge[];
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
   selectedNodeId: string | null;
+  nodeStatus: Record<string, 'idle' | 'running' | 'completed'>;
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
   onConnect: OnConnect;
-  setNodes: (nodes: Node[]) => void;
-  setEdges: (edges: Edge[]) => void;
-  addNode: (node: Node) => void;
+  setNodes: (nodes: WorkflowNode[]) => void;
+  setEdges: (edges: WorkflowEdge[]) => void;
+  addNode: (node: WorkflowNode) => void;
   updateNodeData: (id: string, data: any) => void;
   setSelectedNodeId: (id: string | null) => void;
+  setNodeStatus: (id: string, status: 'idle' | 'running' | 'completed') => void;
+  resetAllStatuses: () => void;
 }
 
-export const useWorkflowStore = create<WorkflowState>((set, get) => ({
-  nodes: [],
-  edges: [],
-  selectedNodeId: null,
+export const useWorkflowStore = create<WorkflowState>()(
+  temporal(
+    (set, get) => ({
+      nodes: [],
+      edges: [],
+      selectedNodeId: null,
+      nodeStatus: {},
 
-  // Called by React Flow when nodes change (e.g. dragging)
-  onNodesChange: (changes: NodeChange[]) => {
-    set({
-      nodes: applyNodeChanges(changes, get().nodes),
-    });
-  },
+      // Called by React Flow when nodes change (e.g. dragging)
+      onNodesChange: (changes: NodeChange[]) => {
+        set({
+          nodes: applyNodeChanges(changes, get().nodes) as WorkflowNode[],
+        });
+      },
 
-  // Called by React Flow when edges change
-  onEdgesChange: (changes: EdgeChange[]) => {
-    set({
-      edges: applyEdgeChanges(changes, get().edges),
-    });
-  },
+      // Called by React Flow when edges change
+      onEdgesChange: (changes: EdgeChange[]) => {
+        set({
+          edges: applyEdgeChanges(changes, get().edges),
+        });
+      },
 
-  // Called when connecting two nodes
-  onConnect: (connection: Connection) => {
-    set({
-      edges: addEdge(connection, get().edges),
-    });
-  },
+      // Called when connecting two nodes
+      onConnect: (connection: Connection) => {
+        set({
+          edges: addEdge(connection, get().edges),
+        });
+      },
 
-  setNodes: (nodes: Node[]) => set({ nodes }),
-  setEdges: (edges: Edge[]) => set({ edges }),
-  
-  addNode: (node: Node) => {
-    set({ nodes: [...get().nodes, node] });
-  },
+      setNodes: (nodes: WorkflowNode[]) => set({ nodes }),
+      setEdges: (edges: WorkflowEdge[]) => set({ edges }),
+      
+      addNode: (node: WorkflowNode) => {
+        set({ nodes: [...get().nodes, node] });
+      },
 
-  updateNodeData: (id: string, data: any) => {
-    set({
-      nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n)),
-    });
-  },
+      updateNodeData: (id: string, data: any) => {
+        set({
+          nodes: get().nodes.map((n) => (n.id === id ? { ...n, data: { ...n.data, ...data } } : n)),
+        });
+      },
 
-  setSelectedNodeId: (id: string | null) => set({ selectedNodeId: id }),
-}));
+      setSelectedNodeId: (id: string | null) => set({ selectedNodeId: id }),
+
+      setNodeStatus: (id, status) => {
+        set({ nodeStatus: { ...get().nodeStatus, [id]: status } });
+      },
+
+      resetAllStatuses: () => {
+        set({ nodeStatus: {} });
+      },
+    }),
+    {
+      partialize: (state) => ({ nodes: state.nodes, edges: state.edges }),
+    }
+  )
+);

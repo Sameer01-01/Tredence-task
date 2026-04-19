@@ -1,9 +1,11 @@
 import { Handle, Position } from '@xyflow/react';
 import { UserCheck } from 'lucide-react';
+import { useWorkflowStore } from '../store/workflowStore';
 
-export const ApprovalNode = ({ data }: any) => {
+export const ApprovalNode = ({ id, data }: any) => {
+  const status = useWorkflowStore(state => state.nodeStatus[id]);
   return (
-    <div className="custom-node approval-node">
+    <div className={`custom-node approval-node ${status ? `status-${status}` : ''}`}>
       <Handle type="target" position={Position.Top} className="handle-target" />
       <div className="node-header">
         <UserCheck size={16} />
