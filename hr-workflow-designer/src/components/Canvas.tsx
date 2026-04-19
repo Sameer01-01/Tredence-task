@@ -159,6 +159,19 @@ const CanvasInner = () => {
     );
   }, [selectedNodes, nodes, storeSetNodes]);
 
+  // Remove group label/color from selected nodes
+  const handleUngroupSelected = useCallback(() => {
+    if (selectedNodes.length === 0) return;
+    const selectedIds = new Set(selectedNodes.map(n => n.id));
+    storeSetNodes(
+      nodes.map(n => {
+        if (!selectedIds.has(n.id)) return n;
+        const { groupLabel: _gl, groupColor: _gc, ...restData } = n.data as any;
+        return { ...n, data: restData } as WorkflowNode;
+      })
+    );
+  }, [selectedNodes, nodes, storeSetNodes]);
+
   return (
     <div className="canvas-wrapper" ref={wrapperRef}>
       <ReactFlow
@@ -242,6 +255,23 @@ const CanvasInner = () => {
               >
                 <Tag size={14} /> Group
               </button>
+
+              {/* Show Ungroup only when at least one selected node has a group */}
+              {selectedNodes.some(n => (n.data as any).groupLabel) && (
+                <button
+                  onClick={handleUngroupSelected}
+                  title="Remove group tag from selected nodes"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '6px',
+                    padding: '6px 14px', borderRadius: '6px',
+                    background: 'rgba(251,191,36,0.1)',
+                    border: '1px solid rgba(251,191,36,0.5)',
+                    color: '#fbbf24', cursor: 'pointer', fontSize: '13px', fontWeight: 500,
+                  }}
+                >
+                  <Tag size={14} /> Ungroup
+                </button>
+              )}
               <button
                 onClick={handleDeleteSelected}
                 title="Delete selected nodes"
