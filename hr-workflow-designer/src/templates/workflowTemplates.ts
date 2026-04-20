@@ -153,10 +153,85 @@ const performanceReviewTemplate: WorkflowTemplate = {
   ],
 };
 
+
+// ─────────────────────────────────────────────
+// TEMPLATE 6 — Document Verification Flow (loop + labelled branches)
+// ─────────────────────────────────────────────
+const docVerificationLoopTemplate: WorkflowTemplate = {
+  id: 'doc-verification-loop',
+  name: 'Document Verification Flow',
+  description: 'Employee uploads docs → validated by condition. YES routes to approval & close. NO loops back to re-upload.',
+  category: 'Compliance',
+  icon: '🔄',
+  nodes: [
+    { id: 'dvl-1', type: 'start',     position: { x: 300, y: 40  }, data: { title: 'Process Initiated' } },
+    { id: 'dvl-2', type: 'task',      position: { x: 300, y: 180 }, data: { title: 'Upload Documents',        assignee: 'Employee',           dueDate: '' } },
+    { id: 'dvl-3', type: 'condition', position: { x: 300, y: 340 }, data: { title: 'Documents Valid?',       field: 'score', operator: '>', value: '60' } },
+    { id: 'dvl-4', type: 'automated', position: { x: 80,  y: 500 }, data: { title: 'Notify Re-upload Required', action: 'send_email' } },
+    { id: 'dvl-5', type: 'task',      position: { x: 80,  y: 660 }, data: { title: 'Re-upload Documents',    assignee: 'Employee',           dueDate: '' } },
+    { id: 'dvl-6', type: 'approval',  position: { x: 540, y: 500 }, data: { title: 'Compliance Approval',    approverRole: 'Compliance Lead', autoApproveThreshold: 3 } },
+    { id: 'dvl-7', type: 'automated', position: { x: 540, y: 660 }, data: { title: 'Archive & Confirm',      action: 'update_db' } },
+    { id: 'dvl-8', type: 'end',       position: { x: 540, y: 800 }, data: { title: 'Verification Complete',  endMessage: 'All documents verified and archived.' } },
+  ] as WorkflowNode[],
+  edges: [
+    { id: 'dvl-e1', source: 'dvl-1', target: 'dvl-2' },
+    { id: 'dvl-e2', source: 'dvl-2', target: 'dvl-3' },
+    // YES branch → approval
+    { id: 'dvl-e3', source: 'dvl-3', target: 'dvl-6', sourceHandle: 'true',  label: 'Yes — Valid' },
+    // NO branch → re-upload loop
+    { id: 'dvl-e4', source: 'dvl-3', target: 'dvl-4', sourceHandle: 'false', label: 'No — Invalid' },
+    { id: 'dvl-e5', source: 'dvl-4', target: 'dvl-5' },
+    // Loop back to condition after re-upload
+    { id: 'dvl-e6', source: 'dvl-5', target: 'dvl-3' },
+    { id: 'dvl-e7', source: 'dvl-6', target: 'dvl-7' },
+    { id: 'dvl-e8', source: 'dvl-7', target: 'dvl-8' },
+  ],
+};
+
+// ─────────────────────────────────────────────
+// TEMPLATE 7 — Escalation Flow (multi-level condition)
+// ─────────────────────────────────────────────
+const escalationFlowTemplate: WorkflowTemplate = {
+  id: 'escalation-flow',
+  name: 'Escalation Flow',
+  description: 'Request goes through manager approval, then a delay check decides if senior escalation is needed.',
+  category: 'Approvals',
+  icon: '🚨',
+  nodes: [
+    { id: 'esc-1', type: 'start',     position: { x: 300, y: 40  }, data: { title: 'Request Submitted' } },
+    { id: 'esc-2', type: 'task',      position: { x: 300, y: 180 }, data: { title: 'Submit Request Form',      assignee: 'Employee',          dueDate: '' } },
+    { id: 'esc-3', type: 'approval',  position: { x: 300, y: 340 }, data: { title: 'Manager Approval',         approverRole: 'Line Manager',   autoApproveThreshold: 2 } },
+    { id: 'esc-4', type: 'delay',     position: { x: 300, y: 500 }, data: { title: 'SLA Timer',                delayMs: 2000 } },
+    { id: 'esc-5', type: 'condition', position: { x: 300, y: 660 }, data: { title: 'Delay > 2 Days?',          field: 'delay', operator: '>', value: '2' } },
+    // NO branch — direct close
+    { id: 'esc-6', type: 'automated', position: { x: 80,  y: 820 }, data: { title: 'Notify Requester',         action: 'send_email' } },
+    { id: 'esc-7', type: 'end',       position: { x: 80,  y: 970 }, data: { title: 'Request Closed',           endMessage: 'Resolved within SLA. No escalation needed.' } },
+    // YES branch — escalate
+    { id: 'esc-8', type: 'approval',  position: { x: 550, y: 820 }, data: { title: 'Senior Manager Approval',  approverRole: 'Senior Manager', autoApproveThreshold: 5 } },
+    { id: 'esc-9', type: 'automated', position: { x: 550, y: 970 }, data: { title: 'Log Escalation Event',     action: 'update_db' } },
+    { id: 'esc-10', type: 'end',      position: { x: 550, y: 1110 }, data: { title: 'Escalation Resolved',     endMessage: 'Escalated and approved by senior management.' } },
+  ] as WorkflowNode[],
+  edges: [
+    { id: 'esc-e1', source: 'esc-1', target: 'esc-2' },
+    { id: 'esc-e2', source: 'esc-2', target: 'esc-3' },
+    { id: 'esc-e3', source: 'esc-3', target: 'esc-4' },
+    { id: 'esc-e4', source: 'esc-4', target: 'esc-5' },
+    // NO → direct end
+    { id: 'esc-e5', source: 'esc-5', target: 'esc-6',  sourceHandle: 'false', label: 'No — Within SLA' },
+    // YES → escalate
+    { id: 'esc-e6', source: 'esc-5', target: 'esc-8',  sourceHandle: 'true',  label: 'Yes — Escalate' },
+    { id: 'esc-e7', source: 'esc-6', target: 'esc-7' },
+    { id: 'esc-e8', source: 'esc-8', target: 'esc-9' },
+    { id: 'esc-e9', source: 'esc-9', target: 'esc-10' },
+  ],
+};
+
 export const workflowTemplates: WorkflowTemplate[] = [
   onboardingTemplate,
   leaveApprovalTemplate,
   documentVerificationTemplate,
   parallelHRTemplate,
   performanceReviewTemplate,
+  docVerificationLoopTemplate,
+  escalationFlowTemplate,
 ];
