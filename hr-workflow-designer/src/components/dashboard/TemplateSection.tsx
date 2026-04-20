@@ -13,7 +13,7 @@ const categoryColors: Record<string, { bg: string; color: string }> = {
 };
 
 export const TemplateSection: React.FC = () => {
-  const { createWorkflow, loadWorkflow, workflowDataMap } = useWorkflowStore();
+  const { createWorkflow } = useWorkflowStore();
   const { toast } = useToast();
   const navigate = useNavigate();
 

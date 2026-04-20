@@ -9,7 +9,7 @@ interface QuickActionsProps {
 }
 
 export const QuickActions: React.FC<QuickActionsProps> = ({ onScrollToTemplates }) => {
-  const { createWorkflow, setNodes, setEdges } = useWorkflowStore();
+  const { createWorkflow } = useWorkflowStore();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
